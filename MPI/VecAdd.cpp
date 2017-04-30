@@ -19,6 +19,9 @@ struct RandomGenerator {
 };
 
 
+// Basic code to sum 2 arrays. Could've used like an MPI_Reduce,
+// but I've used that before but not Scatter/Gather, and I like variety.
+
 int main(int argc, char** argv) {
 	if (argc != 2) {
 		std::cerr << "Usage: ./VecAdd n\n";
@@ -26,16 +29,12 @@ int main(int argc, char** argv) {
 	}
 
 	int len = atoi(argv[1]);
+	int *a;
+	int *b;
+	int *c;
 
-	int a[len];
-	int b[len];
-	int c[len];
 	srand(time(NULL));
-
-	std::generate(a, a + len, RandomGenerator(200));
-	std::generate(b, b + len, RandomGenerator(200));
 	auto begin = std::chrono::high_resolution_clock::now();
-
 
 	MPI_Init(NULL, NULL);
 
@@ -45,23 +44,36 @@ int main(int argc, char** argv) {
 	int world_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-	char processor_name[MPI_MAX_PROCESSOR_NAME];
-	int name_len;
-	MPI_Get_processor_name(processor_name, &name_len);
+	len = len - (len % world_size);
+	int elementsPerProcess = len / world_size;
 
-	std::cout << "Hello from processor " << processor_name << ", rank " << world_rank << " out of " << world_size << " processors\n";
-	MPI_Finalize();
-	for (int i = 0; i < len; i++) {
-		c[i] = a[i] + b[i];
+	if (world_rank == 0) {
+		a = (int*)malloc(sizeof(int) * len);
+		b = (int*)malloc(sizeof(int) * len);
+		c = (int*)malloc(sizeof(int) * len);
+		std::generate(a, a + len, RandomGenerator(200));
+		std::generate(b, b + len, RandomGenerator(200));
 	}
+	//auto begin = std::chrono::high_resolution_clock::now();
+	int *subsetOfA = (int*)malloc(sizeof(int) * elementsPerProcess);
+	int *subsetOfB = (int*)malloc(sizeof(int) * elementsPerProcess);
+	int *subsetOfC = (int*)malloc(sizeof(int ) * elementsPerProcess);
+	MPI_Scatter(a, elementsPerProcess, MPI_INT, subsetOfA,
+		elementsPerProcess, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Scatter(b, elementsPerProcess, MPI_INT, subsetOfB,
+		elementsPerProcess, MPI_INT, 0, MPI_COMM_WORLD);
+
+	for (int i = 0; i < elementsPerProcess; i++) {
+		subsetOfC[i] = subsetOfA[i] + subsetOfB[i];
+	}
+
+	MPI_Gather(subsetOfC, elementsPerProcess, MPI_INT, c, 
+		elementsPerProcess, MPI_INT, 0, MPI_COMM_WORLD);
 
 
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "ns" << std::endl;
-
-	// for (int i = 0; i < c.size(); i++) {
-	// 	std::cout << a[i] << " + " << b[i] << " = " << c[i] << std::endl;
-	// }
+	MPI_Finalize();
 
 	return 0;
 

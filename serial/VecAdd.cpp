@@ -24,15 +24,15 @@ int main(int argc, char** argv) {
 	}
 
 	int len = atoi(argv[1]);
-
-	int a[len];
-	int b[len];
-	int c[len];
 	srand(time(NULL));
+
+	int* a = (int*)malloc(sizeof(int) * len);
+	int* b = (int*)malloc(sizeof(int) * len);
+	int* c = (int*)malloc(sizeof(int) * len);
+	auto begin = std::chrono::high_resolution_clock::now();
 
 	std::generate(a, a + len, RandomGenerator(200));
 	std::generate(b, b + len, RandomGenerator(200));
-	auto begin = std::chrono::high_resolution_clock::now();
 
 	for (int i = 0; i < len; i++) {
 		c[i] = a[i] + b[i];

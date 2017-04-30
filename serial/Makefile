@@ -4,7 +4,7 @@ CXX=g++
 RM=rm -f
 
 CFLAGS=
-CPPFLAGS= -std=c++11
+CPPFLAGS= -std=c++11 -O3
 LDFLAGS=
 LDLIBS=
 
