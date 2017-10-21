@@ -125,29 +125,37 @@ private:
 
 int main(int argc, char **argv) {
 
-  if (argc != 2) {
-    std::cout << "Usage: ./matrix-vector [dimension]" << std::endl;
+  if (argc != 4) {
+    std::cout << "Usage: ./matrix-vector [dimension] [shouldSerial] [shouldOpenMP]" << std::endl;
     exit(-1);
   }
   int size = atoi(argv[1]);
+  int shouldSerial = atoi(argv[2]);
+  int shouldOpenMp = atoi(argv[3]);
   std::cout << "Initializing matrix and vector with dimension " << size << std::endl;
 
+  std::chrono::steady_clock::time_point start, end;
   MatrixVector matVec = MatrixVector(size);
-
-  std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-  std::string singularOutput = matVec.runMultiplySingular();
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  std::cout << "Singular took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << "ms.\n";
-
-  start = std::chrono::steady_clock::now();
-  std::string openMpOutput = matVec.runMultiplyOpenMp();
-  end = std::chrono::steady_clock::now();
-  std::cout << "OpenMP took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << "ms.\n";
-  std::cout << "Singular result: \n";
-  std::cout << singularOutput << std::endl;
-  std::cout << "OpenMP result: \n";
-  std::cout << openMpOutput << std::endl;
-
+  std::string serialResult, openMpResult;
+  if (shouldSerial) {
+    start = std::chrono::steady_clock::now();
+    serialResult = matVec.runMultiplySingular();
+    end = std::chrono::steady_clock::now();
+    std::cout << "Singular took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << "ms.\n";
+  }
+  if (shouldOpenMp) {
+    start = std::chrono::steady_clock::now();
+    openMpResult = matVec.runMultiplyOpenMp();
+    end = std::chrono::steady_clock::now();
+    std::cout << "OpenMP took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << "ms.\n";
+  }
+  
+  if (shouldSerial) {
+    std::cout << "Serial result: \n" << serialResult << "\n";
+  }
+  if (shouldOpenMp) {
+    std::cout << "OpenMP result: \n" << openMpResult << "\n";
+  }
   return 0;
 }
 
