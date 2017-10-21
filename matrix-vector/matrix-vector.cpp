@@ -6,6 +6,14 @@
 #include <chrono>
 #include <omp.h>
 
+//#define PRINT
+
+/*
+ * Class to contain a matrix of size nxn and a vector of size n
+ * Fills them with pseudo-random numbers
+ * Performs matrix-vector multiplication in serial or OpenMP threads
+ *
+ */
 class MatrixVector {
 public:
   MatrixVector(unsigned int dimension) {
@@ -13,9 +21,9 @@ public:
     dim = dimension;
     std::chrono::time_point<std::chrono::system_clock> start;
     start = std::chrono::system_clock::now();
-    auto tempeh = std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch());
-    mt = std::mt19937(tempeh.count());
-    dist = std::uniform_int_distribution<int>(0,1);
+    auto time = std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch());
+    mt = std::mt19937(time.count());
+    dist = std::uniform_int_distribution<int>(0,100);
 
     matrix = std::vector<std::vector<int>>(dimension, std::vector<int>(dimension));
     vec = std::vector<int>(dimension);
@@ -46,73 +54,59 @@ public:
   }
 
   std::string runMultiplySingular() {
+#ifdef PRINT
     std::stringstream buf;
+#endif
     std::vector<int> result(dim);
     for (unsigned int i = 0; i < dim; i++) {
       for (unsigned int j = 0; j < dim; j++) {
         result.at(i) += matrix.at(i).at(j)*vec.at(j);
       }
     }
+#ifdef PRINT
     for (auto i : result) {
       buf << i << " ";
     }
     return buf.str();
+#endif
+#ifndef PRINT
+    return "Complete";
+#endif
   }
 
-/*
   std::string runMultiplyOpenMp() {
+#ifdef PRINT
     std::stringstream buf;
-    std::vector<int> result(dim);
-    std::cout << "Available processors: " << omp_get_max_threads() << "\n";
-    std::stringstream tempBuf;
-    tempBuf << "Thread ID: " << omp_get_thread_num() << std::endl;
-    std::cout << tempBuf.str();
-    for (unsigned int i = 0; i < dim; i++) {
-      int temp = 0;
-      #pragma omp parallel for reduction(+:temp)
-      for (unsigned int j = 0; j < dim; j++) {
-        temp += matrix.at(i).at(j) * vec.at(j);
-      }
-      result.at(i) = temp;
-    }
-    buf << "\n";
-    for (auto i : result) {
-      buf << i << " ";
-    }
-    buf << "\n";
-    return buf.str();
-  }
-*/
-
-  std::string runMultiplyOpenMp() {
-    std::stringstream buf;
+#endif
     std::vector<int> result(dim);
     std::cout << "Available processors: " << omp_get_max_threads() << "\n";
     #pragma omp parallel
     {
-    std::stringstream tempBuf;
-    tempBuf << "Thread ID: " << omp_get_thread_num() << std::endl;
-    std::cout << tempBuf.str();
-    #pragma omp for
-    for (unsigned int i = 0; i < dim; i++) {
-      int temp = 0;
-      #pragma omp parallel for reduction(+:temp)
-      for (unsigned int j = 0; j < dim; j++) {
-        temp += matrix.at(i).at(j) * vec.at(j);
+      std::stringstream tempBuf;
+      tempBuf << "Thread ID: " << omp_get_thread_num() << std::endl;
+      std::cout << tempBuf.str();
+      #pragma omp for
+      for (unsigned int i = 0; i < dim; i++) {
+        int temp = 0;
+        #pragma omp parallel for reduction(+:temp)
+        for (unsigned int j = 0; j < dim; j++) {
+          temp += matrix.at(i).at(j) * vec.at(j);
+        }
+        result.at(i) = temp;
       }
-      result.at(i) = temp;
     }
-    }
+#ifdef PRINT
     buf << "\n";
     for (auto i : result) {
       buf << i << " ";
     }
     buf << "\n";
     return buf.str();
+#endif
+#ifndef PRINT
+    return "Complete";
+#endif
   }
-
-
-
 
 
 private:
@@ -131,13 +125,12 @@ private:
 
 int main(int argc, char **argv) {
 
-  if (argc != 3) {
-    std::cout << "Usage: ./matrix-vector [dimension] [print]" << std::endl;
+  if (argc != 2) {
+    std::cout << "Usage: ./matrix-vector [dimension]" << std::endl;
     exit(-1);
   }
   int size = atoi(argv[1]);
-  int print = atoi(argv[2]);
-  std::cout << "Initializing matrix and vector with dimension " << size;
+  std::cout << "Initializing matrix and vector with dimension " << size << std::endl;
 
   MatrixVector matVec = MatrixVector(size);
 
@@ -150,12 +143,10 @@ int main(int argc, char **argv) {
   std::string openMpOutput = matVec.runMultiplyOpenMp();
   end = std::chrono::steady_clock::now();
   std::cout << "OpenMP took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << "ms.\n";
-  if (print) {
-    std::cout << "Singular result: \n";
-    std::cout << singularOutput << std::endl;
-    std::cout << "OpenMP result: \n";
-    std::cout << openMpOutput << std::endl;
-  }
+  std::cout << "Singular result: \n";
+  std::cout << singularOutput << std::endl;
+  std::cout << "OpenMP result: \n";
+  std::cout << openMpOutput << std::endl;
 
   return 0;
 }
