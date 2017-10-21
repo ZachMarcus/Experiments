@@ -6,7 +6,7 @@
 #include <chrono>
 #include <omp.h>
 
-//#define PRINT
+#define PRINT
 
 /*
  * Class to contain a matrix of size nxn and a vector of size n
@@ -88,6 +88,8 @@ public:
       #pragma omp for
       for (unsigned int i = 0; i < dim; i++) {
         int temp = 0;
+        // Run a reduction on temp, then assign to element in vector
+        // Done like so to get around OpenMP limitations
         #pragma omp parallel for reduction(+:temp)
         for (unsigned int j = 0; j < dim; j++) {
           temp += matrix.at(i).at(j) * vec.at(j);
