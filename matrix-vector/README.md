@@ -1,20 +1,20 @@
-#Matrix-Vector Multiplication
+# Matrix-Vector Multiplication
 
-###Building: 
+### Building: 
 ```
 make
 ```
 Note that to print the resulting vector output, you must uncomment the "#define PRINT" line
 
 
-###Usage:
+### Usage:
 ```
 ./matrix-vector [numElements] [doSerial] [doOpenMP]
 ```
 
 The performance numbers can be found at perf.csv and a graph depicting those is also present in this directory.
 
-##Performance
+## Performance
 ![Performance Chart](https://github.com/ZachMarcus/Experiments/raw/master/matrix-vector/matrix-vector-perf.png)
 
 
