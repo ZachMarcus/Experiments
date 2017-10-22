@@ -32,7 +32,7 @@ public:
     int failed;
     int numTries;
     pthread_mutex_t *tempFork;
-    while (--numIterations > 0) {
+    while (true) {
       std::cout << "Philosopher #" << num << " is thinking\n";
       std::uniform_int_distribution<> dist{10,50};
       std::this_thread::sleep_for(std::chrono::milliseconds{dist(randomEngine)});
