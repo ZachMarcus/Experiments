@@ -8,7 +8,10 @@ Note that to print the resulting vector output, you must uncomment the "#define 
 
 
 ### Usage:
+Only load the compiler module or similar one where necessary. 
+This particular module is available on the Northeastern Discovery Cluster.
 ```
+module load gnu-4.9.3-compilers
 ./matrix-vector [numElements] [doSerial] [doOpenMP]
 ```
 
