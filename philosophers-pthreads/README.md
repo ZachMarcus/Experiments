@@ -1,7 +1,3 @@
-# Makefile
-
-
-
 
 
 ### Usage
