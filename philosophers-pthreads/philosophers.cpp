@@ -13,6 +13,10 @@
 // right fork first, this might deadlock eventually. Each philosopher
 // essentially must pick up the lowest number fork they can.
 
+
+
+#define PRINT
+
 bool running = true;
 
 // Class to represent a philosopher
@@ -32,11 +36,15 @@ public:
     int failed;
     int numTries;
     pthread_mutex_t *tempFork;
-    while (true) {
+    while (timesEaten < 100) {
+#ifdef PRINT
       std::cout << "Philosopher #" << num << " is thinking\n";
+#endif
       std::uniform_int_distribution<> dist{10,50};
       std::this_thread::sleep_for(std::chrono::milliseconds{dist(randomEngine)});
+#ifdef PRINT
       std::cout << "Philosopher #" << num << " is hungry\n";
+#endif
      // Allow multiple tries to pick up forks
      numTries = 2;
       do {
@@ -57,11 +65,14 @@ public:
 
       if (!failed) {
         timesEaten++;
+#ifdef PRINT
         std::cout << "Philosopher #" << num << " is eating with left fork " << num << " and right fork " << (num+numPhilosophers-1) %(numPhilosophers) << "\n";
-        std::uniform_int_distribution<> dist{10,100};
+#endif
+        std::uniform_int_distribution<> dist{10,50};
         std::this_thread::sleep_for(std::chrono::milliseconds{dist(randomEngine)});
         pthread_mutex_unlock(rightFork);
         pthread_mutex_unlock(leftFork);
+        timesEaten++;
       }
     }
     
@@ -115,7 +126,7 @@ bool dinnerParty(int numPhilosophers) {
     philosophers.push_back(Philosopher(numPhilosophers));
   }
   // create the forks / mutexes
-  std::vector<pthread_mutex_t> forks(5);
+  std::vector<pthread_mutex_t> forks(numPhilosophers);
   int failed;
   for (auto fork : forks) {
     failed = pthread_mutex_init(&fork, NULL);
@@ -130,16 +141,18 @@ bool dinnerParty(int numPhilosophers) {
     philosophers[i].set(i, &forks[i], &forks[(i+1)%numPhilosophers]);
     pthread_create(philosophers[i].getThread(), NULL, &Philosopher::doWorkHelp, &philosophers[i]);
   }
+#ifdef PRINT
   std::cout << "Created threads for all philosophers" << std::endl;
   printState(numPhilosophers);
+#endif
   for (auto philosopher : philosophers) {
     pthread_join(*philosopher.getThread(), NULL);
   }
-  
+#ifdef PRINT
   for (auto philosopher : philosophers) {
     philosopher.printResult();
   }
-
+#endif
 
   return true;
 }
