@@ -62,29 +62,52 @@ void testTiming() {
 
 
 int main(int argc, char **argv) {
+  unsigned int numIterations;
+  if (argc != 2) {
+    std::cerr << "Usage: ./taylor [numIterations]\n";
+    return -1;
+  } else {
+    numIterations = atoi(argv[1]);
+  }
 
   testTiming();
  
-  std::vector<float> floats = {-1.1, 2.2, 3.3, 4.400004444};
-  std::vector<double> doubles = {-1.1, 2.2, 3.3, 4.400004444};
-  unsigned int numIterations = 27;
-
+  std::vector<float> floats = {-1.45678,.2,-.3,4.765,.5,.6,.7,.85,.45};
+  std::vector<float> floatResults(floats.size());
+  std::vector<double> doubles = {-1.45678,.2,-.3,4.765,.5,.6,.7,.85,.45};
+  std::vector<double> doubleResults(doubles.size());
   std::stringstream temp;
   temp << std::fixed << std::setprecision(64);
 
   std::cout << "Floats:\n";
-  for (auto i : floats) {
-    temp << taylor(i, numIterations);
+  float floatResult;
+  for (unsigned int i = 0; i < floats.size(); i++) {
+    floatResult = taylor(floats.at(i), numIterations);
+    floatResults.at(i) = floatResult;
+    temp << floatResult;
     std::cout << temp.str().substr(0,53) << "\n";
     temp.str(std::string()); // clear stream
   }
 
   std::cout << "\nDoubles:\n";
-  for (auto i : doubles) {
-    temp << taylor(i, numIterations);
+  double doubleResult;
+  for (unsigned int i = 0; i < doubles.size(); i++) {
+    doubleResult = taylor(doubles.at(i), numIterations);
+    doubleResults.at(i) = doubleResult;
+    temp << doubleResult;
     std::cout << temp.str().substr(0,53) << "\n";
     temp.str(std::string()); // clear stream
   }
+
+  std::cout << std::fixed << std::setprecision(16) << "\nDifferences:\n";
+  double diffPercent;
+  for (unsigned int i = 0; i < doubles.size(); i++) {
+    diffPercent = 100 * (doubleResults.at(i) - floatResults.at(i))/doubleResults.at(i);
+    std::cout << diffPercent << "\n";
+  } 
+
+  std::cout << "\n";
+
 
   return 0;
 }
