@@ -47,38 +47,19 @@ public:
 #ifdef PRINT
       std::cout << "Philosopher #" << num << " is hungry\n";
 #endif
-     // Allow multiple tries to pick up forks
-     numTries = 2;
-      do {
-        failed = omp_set_lock(leftFork);
-        if (numTries > 0) {
-          pthread_mutex_trylock(rightFork);
-        } else {
-          omp_set_lock(rightFork);
-        }
-        if (failed) {
-          omp_unset_lock(leftFork);
-          tempFork = leftFork;
-          leftFork = rightFork;
-          rightFork = tempFork;
-          numTries--;
-        }
-      } while(failed && running);
 
-      if (!failed) {
-        timesEaten++;
+      omp_set_lock(leftFork);
+      omp_set_lock(rightFork);
 #ifdef PRINT
-        std::cout << "Philosopher #" << num << " is eating with left fork " << num << " and right fork " << (num+numPhilosophers-1) %(numPhilosophers) << "\n";
+      std::cout << "Philosopher #" << num << " is eating with left fork " << num << " and right fork " << (num+numPhilosophers-1)%(numPhilosophers) << "\n";
 #endif
-        std::uniform_int_distribution<> dist{10,50};
-        std::this_thread::sleep_for(std::chrono::milliseconds{dist(randomEngine)});
-        omp_unset_lock(rightFork);
-        omp_unset_lock(leftFork);
-        timesEaten++;
-      }
+      timesEaten++;
+      std::this_thread::sleep_for(std::chrono::milliseconds{dist(randomEngine)});
+      omp_unset_lock(leftFork);
+      omp_unset_lock(rightFork);
     }
     
-    return NULL;
+    return;
   }
 
   void set(int setNum, omp_lock_t* left, omp_lock_t* right) {
@@ -121,13 +102,8 @@ bool dinnerParty(int numPhilosophers) {
   }
   // create the forks / mutexes
   std::vector<omp_lock_t> forks(numPhilosophers);
-  int failed;
   for (auto fork : forks) {
-    failed = omp_init_lock(&fork);
-    if (failed) {
-      std::cout << "Failed in initializing fork mutexes." << std::endl;
-      exit(1);
-    }
+    omp_init_lock(&fork);
   }
   
   // create the thread for each philosopher
@@ -136,7 +112,6 @@ bool dinnerParty(int numPhilosophers) {
     int i = omp_get_thread_num();
     philosophers[i].set(i, &forks[i], &forks[(i+1)%numPhilosophers]);
     philosophers[i].doWork();
-    (philosophers[i].getThread(), NULL, &Philosopher::doWorkHelp, &philosophers[i]);
   }
 #ifdef PRINT
   std::cout << "Created threads for all philosophers" << std::endl;

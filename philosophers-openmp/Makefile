@@ -2,7 +2,7 @@
 
 CXX=g++
 CFLAGS=-O3 -std=c++11
-LDFLAGS=-pthread
+LDFLAGS=-fopenmp
 
 
 philosophers: philosophers.cpp

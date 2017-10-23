@@ -68,7 +68,7 @@ public:
 #ifdef PRINT
         std::cout << "Philosopher #" << num << " is eating with left fork " << num << " and right fork " << (num+numPhilosophers-1) %(numPhilosophers) << "\n";
 #endif
-        std::uniform_int_distribution<> dist{10,50};
+//        std::uniform_int_distribution<> dist{10,50};
         std::this_thread::sleep_for(std::chrono::milliseconds{dist(randomEngine)});
         pthread_mutex_unlock(rightFork);
         pthread_mutex_unlock(leftFork);
