@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <chrono>
 
 template<typename T>
 T taylor(T x, unsigned int termNumber) {
@@ -35,8 +36,34 @@ T taylor(T x, unsigned int termNumber) {
 
 
 
+void testTiming() {
+  std::vector<float> floats = {-1.45678,2,-3,4.765,5,6,7,8.5,45};
+  std::vector<double> doubles = {-1.45678,2,-3,4.765,5,6,7,8.5,45};
+  auto start = std::chrono::system_clock::now();
+  for (unsigned int i = 0; i < 10; i++) {
+    for (auto i : floats) {
+      taylor(i, 15);
+    }
+  }
+  auto end = std::chrono::system_clock::now();  
+  std::cout << "Float Time: " << (end-start).count() << "\n";
+
+  start = std::chrono::system_clock::now();
+  for (unsigned int i = 0; i < 10; i++) {
+    for (auto i : doubles) {
+      taylor(i, 15);
+    }
+  }
+  end = std::chrono::system_clock::now();
+  std::cout << "Double Time: " << (end-start).count() << "\n";
+  
+  return;
+}
+
 
 int main(int argc, char **argv) {
+
+  testTiming();
  
   std::vector<float> floats = {-1.1, 2.2, 3.3, 4.400004444};
   std::vector<double> doubles = {-1.1, 2.2, 3.3, 4.400004444};
