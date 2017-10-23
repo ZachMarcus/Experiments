@@ -2,6 +2,8 @@
 #include <iostream>
 #include <math.h>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 template<typename T>
 T taylor(T x, unsigned int termNumber) {
@@ -36,24 +38,26 @@ T taylor(T x, unsigned int termNumber) {
 
 int main(int argc, char **argv) {
  
-  std::vector<float> floats = {1.1, 2.2, 3.3, 4.400004444};
-  std::vector<double> doubles = {1.1, 2.2, 3.3, 4.400004444};
-  unsigned int numIterations = 28;
+  std::vector<float> floats = {-1.1, 2.2, 3.3, 4.400004444};
+  std::vector<double> doubles = {-1.1, 2.2, 3.3, 4.400004444};
+  unsigned int numIterations = 27;
 
-  std::cout << std::fixed << std::setprecision(16);
+  std::stringstream temp;
+  temp << std::fixed << std::setprecision(64);
 
   std::cout << "Floats:\n";
   for (auto i : floats) {
-    std::cout << taylor(i, numIterations) << "\t";
+    temp << taylor(i, numIterations);
+    std::cout << temp.str().substr(0,53) << "\n";
+    temp.str(std::string()); // clear stream
   }
 
   std::cout << "\nDoubles:\n";
-
   for (auto i : doubles) {
-    std::cout << taylor(i, numIterations) << "\t";
-
+    temp << taylor(i, numIterations);
+    std::cout << temp.str().substr(0,53) << "\n";
+    temp.str(std::string()); // clear stream
   }
-  std::cout << std::endl;
 
   return 0;
 }
