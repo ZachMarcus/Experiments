@@ -28,7 +28,8 @@ void initMatrix(int matrix[][MATRIX_SIZE]) {
 }
 
 
-void printMatrix(int matrix[][MATRIX_SIZE]) {
+template<class T>
+void printMatrix(T matrix[][MATRIX_SIZE]) {
   for (int i = 0; i < MATRIX_SIZE; i++) {
     for (int j = 0; j < MATRIX_SIZE; j++) {
       std::cout << matrix[i][j] << " ";
@@ -36,6 +37,10 @@ void printMatrix(int matrix[][MATRIX_SIZE]) {
     std::cout << "\n";
   }
   return;
+}
+
+void invertMatrixSerial(int matrix[][MATRIX_SIZE]) {
+
 }
 
 
@@ -48,6 +53,8 @@ int main(int argc, char **argv) {
   int numThreads = atoi(argv[1]);
   int matrix[MATRIX_SIZE][MATRIX_SIZE];
   initMatrix(matrix);
+  printMatrix(matrix);
+  invertMatrixSerial(matrix);
   printMatrix(matrix);
 }
 
