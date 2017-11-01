@@ -15,6 +15,16 @@
 const int MATRIX_SIZE = 5;
 
 
+//int determinant(int matrix[][MATRIX_SIZE]);
+//void cofactor(int matrix[][MATRIX_SIZE]);
+//void transpose(int matrix[][MATRIX_SIZE]);
+//https://en.wikipedia.org/wiki/Gaussian_elimination
+
+
+
+
+
+
 void initMatrix(int matrix[][MATRIX_SIZE]) {
   #pragma omp parallel for
   for (int i = 0; i < MATRIX_SIZE; i++) {
@@ -46,16 +56,22 @@ void invertMatrixSerial(int matrix[][MATRIX_SIZE]) {
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    std::cerr << "Args wrong. Usage: ./matrix-inversion [numThreads]" << std::endl;
+    std::cerr << "Args wrong. Usage: ./matrix-inversion [shouldPrint]" << std::endl;
     exit(1);
   }
 
-  int numThreads = atoi(argv[1]);
+  int shouldPrint = atoi(argv[1]);
+
   int matrix[MATRIX_SIZE][MATRIX_SIZE];
   initMatrix(matrix);
-  printMatrix(matrix);
+  if (shouldPrint) {
+    printMatrix(matrix);
+  }
   invertMatrixSerial(matrix);
-  printMatrix(matrix);
+  if (shouldPrint) {
+    printMatrix(matrix);
+  }
+  return 0;
 }
 
 
