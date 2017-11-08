@@ -1,8 +1,8 @@
 
 
-CXX=g++
-CFLAGS=-O3 -Wall
-LDFLAGS= -fopenmpi
+CXX=mpic++
+CFLAGS=-std=c++11 -O3 -Wall
+LDFLAGS=
 
 
 monte-carlo: monte-carlo.cpp
