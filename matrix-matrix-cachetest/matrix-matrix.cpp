@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     }
   }
      
-  en = tileSize * 4;
+  en = tileSize;
   start = CLOCK();
 
   // do the actual matrix multiplication

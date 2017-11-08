@@ -1,0 +1,3 @@
+Start out with a non-blocked version to test up until you've reached a problem size n/2 that exceeds the capacity of the L3 cache. Then, set the blocking factor to n/2 and continually decrease this value until there's a trend showing where the optimal value for blocking is related to the L2 cache size.
+
+
