@@ -4,14 +4,18 @@ CXX=gcc
 CFLAGS=-O0 -Wall
 LDFLAGS=
 
+default: all
 
-matrix-matrix: matrix-matrix.cpp
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+matrix-matrix: matrix-matrix.c
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+l3-matrix: l3-matrix.c
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 
-all: matrix-matrix
+all: matrix-matrix l3-matrix
 
 clean:
-	rm matrix-matrix
+	rm matrix-matrix l3-matrix
 
 
