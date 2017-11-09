@@ -1,3 +1,5 @@
+
+#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -16,6 +18,9 @@ int main(int argc, char **argv) {
     printf("Usage: ./matrix-3 [MatrixDimension]\n");
     return -1;
   }
+
+  //printf("sizeofint= %d\n",sizeof(int));
+
   int matrixSize = atoi(argv[1]);
 
   double start, finish, total;

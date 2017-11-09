@@ -1,7 +1,7 @@
 
 
 CXX=gcc
-CFLAGS=-O0 -Wall
+CFLAGS=-O0 -Wall -std=c11
 LDFLAGS=
 
 default: all
