@@ -41,7 +41,7 @@ void calculateGaussian(T** inputMatrix, int index[]) {
   }
 
   // find the rescaling factors, one from each row
-//  #pragma omp parallel for
+ // #pragma omp parallel for
   for (unsigned int i = 0; i < MATRIX_SIZE; ++i) {
     T factor = 0.;
     for (unsigned int j = 0; j < MATRIX_SIZE; ++j) {
@@ -55,9 +55,10 @@ void calculateGaussian(T** inputMatrix, int index[]) {
   
   // search pivoting element from each column
   int k = 0;
-//  #pragma omp parallel for
+//  #pragma omp parallel
   for (unsigned int j = 0; j < MATRIX_SIZE - 1; ++j) {
     T factor = 0;
+//    #pragma omp do private(factorTemp) schedule(runtime)
     for (unsigned int i = j; i < MATRIX_SIZE; ++i) {
       T factorTemp = abs(inputMatrix[i][j]);
       factorTemp = factorTemp / factors[index[i]];
@@ -110,7 +111,7 @@ void invertMatrix(T** inputMatrix, T** outputMatrix, T** tempMatrix) {
 
   start = std::chrono::system_clock::now();
   // Perform backward substitutions
-  #pragma omp parallel for
+  #pragma omp parallel for //num_threads(16)
   for (unsigned int i = 0; i < MATRIX_SIZE; ++i) {
     outputMatrix[MATRIX_SIZE - 1][i] = tempMatrix[index[MATRIX_SIZE - 1]][i] / inputMatrix[index[MATRIX_SIZE - 1]][MATRIX_SIZE - 1];
     for (int j = MATRIX_SIZE - 2; j >= 0; --j) {

@@ -12,10 +12,13 @@ matrix-matrix: matrix-matrix.c
 l3-matrix: l3-matrix.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
+matrix-original: matrix-original.c
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-all: matrix-matrix l3-matrix
+
+all: matrix-matrix l3-matrix matrix-original
 
 clean:
-	rm matrix-matrix l3-matrix
+	rm matrix-matrix l3-matrix matrix-original
 
 
