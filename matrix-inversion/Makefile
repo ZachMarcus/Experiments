@@ -1,7 +1,7 @@
 
 
 CXX=g++
-CFLAGS=-O0 -std=c++11 -fopenmp
+CFLAGS=-O3 -std=c++11 -fopenmp
 LDFLAGS=-fopenmp
 
 

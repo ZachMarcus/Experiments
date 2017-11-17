@@ -1,136 +1,28 @@
-//USE DPOTRI FROM FORTRAN 
-//OR CHOL2inv
-//
-//
-//
-//
-//
 
 
 #include <iostream>
+#include <chrono>
 #include <cstdlib>
 #include <random>
 #include <omp.h>
 
-const int MATRIX_SIZE = 3;
+const int MATRIX_SIZE = 1000;
 
-
-//int determinant(int matrix[][MATRIX_SIZE]);
-//void cofactor(int matrix[][MATRIX_SIZE]);
-//void transpose(int matrix[][MATRIX_SIZE]);
 //https://en.wikipedia.org/wiki/Gaussian_elimination
-
-template<class T>
-T calculateDeterminant(T array[][MATRIX_SIZE], int size);
-template<class T>
-void calculateCofactor(T array[MATRIX_SIZE][MATRIX_SIZE], T factor);
-template<class T>
-void calculateTranspose(T array[MATRIX_SIZE][MATRIX_SIZE], T factors[MATRIX_SIZE][MATRIX_SIZE], float r);
+// OR Look into CHOL2inv from Fortran
+// OR USE DPOTRI from FORTRAN
 
 
 template<class T>
-T calculateDeterminant(T matrix[][MATRIX_SIZE], int size) {
-  T temp = 1;
-  std::cout << "Determinant func, size: " << size << std::endl;
-  T determinant = 0;
-  T tempMatrix[MATRIX_SIZE][MATRIX_SIZE];
-  if (size == 1) {
-    return matrix[0][0];
-  } else {
-    for (int c = 0; c < size; c++) {
-      int m = 0;
-      int n = 0;
-      for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-          tempMatrix[i][j] = 0;
-          if (i != 0 && j!= c) {
-            tempMatrix[m][n] = matrix[i][j];
-            if (n < (size - 2)) {
-              n++;
-            } else {
-              n = 0;
-              m++;
-            }
-          }
-        }
-      }
-      determinant = determinant + temp * (matrix[0][c] * calculateDeterminant(tempMatrix, size-1));
-      temp = -1 * temp;
-    }
+T abs(T input) {
+  if (input < 0) {
+    return input * -1;
   }
-  return determinant;
+  return input;
 }
 
-
 template<class T>
-void calculateCofactor(T array[MATRIX_SIZE][MATRIX_SIZE], T factor) {
-  T tempArray[MATRIX_SIZE][MATRIX_SIZE], factors[MATRIX_SIZE][MATRIX_SIZE];
-  int m, n;
-  for (int q = 0; q < factor; q++) {
-    for (int p = 0; p < factor; p++) {
-      m = 0;
-      n = 0;
-      for (int i = 0; i < factor; i++) {
-        for (int j = 0; j < factor; j++) {
-          tempArray[i][j] = 0;
-          if (i != q && j != p) {
-            tempArray[m][n] = array[i][j];
-            if (n < (factor - 2)) {
-              n++;
-            } else {
-              n = 0;
-              m++;
-            }
-          }
-        }
-      }
-      factors[q][p] = pow(-1, q + p) * calculateDeterminant(tempArray, factor - 1);
-    }
-  }
-  calculateTranspose(array, factors, factor);
-}
-
-
-template<class T>
-void calculateTranspose(T matrix[MATRIX_SIZE][MATRIX_SIZE], T factors[MATRIX_SIZE][MATRIX_SIZE], float r) {
-  T tempMatrix[MATRIX_SIZE][MATRIX_SIZE];
-  T inverseMatrix[MATRIX_SIZE][MATRIX_SIZE];
-  T d;
-  for (int i = 0; i < r; i++) {
-    for (int j = 0; j < r; j++) {
-      tempMatrix[i][j] = factors[j][i];
-    }
-  }
-  d = calculateDeterminant(matrix, r);
-  for (int i = 0; i < r; i++) {
-    for (int j = 0; j < r; j++) {
-      std::cout << "Matrix[i][j] = " << matrix[i][j] << " tempMatrix[i][j] = " << tempMatrix[i][j] << " d = " << d << std::endl;
-      matrix[i][j] = tempMatrix[i][j] / d;
-    }
-  }
-
-  // NOTE: chose to expand out the for loops rather than doing it in one loop
-  //       to improve performance in accessing memory where matrices stored
-
-}
-
-
-
-void initMatrix(int matrix[][MATRIX_SIZE]) {
-  #pragma omp parallel for
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    std::mt19937 generator(std::random_device{}());
-    std::uniform_int_distribution<int> distribution(0, 1000);
-    for (int j = 0; j < MATRIX_SIZE; j++) {
-      matrix[i][j] = distribution(generator);
-    }
-  }
-  return;
-}
-
-
-template<class T>
-void printMatrix(T matrix[][MATRIX_SIZE]) {
+void printMatrix(T** matrix) {
   for (int i = 0; i < MATRIX_SIZE; i++) {
     for (int j = 0; j < MATRIX_SIZE; j++) {
       std::cout << matrix[i][j] << " ";
@@ -141,103 +33,184 @@ void printMatrix(T matrix[][MATRIX_SIZE]) {
 }
 
 template<class T>
-void invertMatrixSerial(T matrix[][MATRIX_SIZE]) {
-  T determinant = calculateDeterminant(matrix, MATRIX_SIZE);
-  if (determinant == 0) {
-    std::cout << "Inverse of Entered Matrix not possible\n";
-  } else {
-    calculateCofactor(matrix, MATRIX_SIZE);
+void calculateGaussian(T** inputMatrix, int index[]) {
+  T factors[MATRIX_SIZE];
+  // initialize index array 
+  for (unsigned int i = 0; i < MATRIX_SIZE; i++) {
+    index[i] = i;
   }
-}
 
-
-void betterMatrixInverse(int matrix[][MATRIX_SIZE]) {
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    for (int j = MATRIX_SIZE; j < 2 * MATRIX_SIZE; j++) {
-      if (i == (j - MATRIX_SIZE)) {
-        matrix[i][j] = 1;
-      } else {
-        matrix[i][j] = 0;
+  // find the rescaling factors, one from each row
+//  #pragma omp parallel for
+  for (unsigned int i = 0; i < MATRIX_SIZE; ++i) {
+    T factor = 0.;
+    for (unsigned int j = 0; j < MATRIX_SIZE; ++j) {
+      T factorTemp = abs(inputMatrix[i][j]);
+      if (factorTemp > factor) {
+        factor = factorTemp;
       }
     }
+    factors[i] = factor;
   }
   
-  int temp; 
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    temp = matrix[i][i];
-    for (int j = 0; j < 2 * MATRIX_SIZE; j++) {
-      matrix[i][j] = matrix[i][j] / temp;
+  // search pivoting element from each column
+  int k = 0;
+//  #pragma omp parallel for
+  for (unsigned int j = 0; j < MATRIX_SIZE - 1; ++j) {
+    T factor = 0;
+    for (unsigned int i = j; i < MATRIX_SIZE; ++i) {
+      T factorTemp = abs(inputMatrix[i][j]);
+      factorTemp = factorTemp / factors[index[i]];
+      if (factorTemp > factor) {
+        factor = factorTemp;
+        k = i;
+      }
+    }
+
+    // interchange rows according to the pivoting order
+    int iTemp = index[j];
+    index[j] = index[k];
+    index[k] = iTemp;
+    for (unsigned int i = j + 1; i < MATRIX_SIZE; ++i) {
+      T jTemp = inputMatrix[index[i]][j] / inputMatrix[index[j]][j];
+      // record pivoting ratios below the diagonal
+      inputMatrix[index[i]][j] = jTemp;
+      // Modify other elements accordingly
+      for (unsigned int l = j + 1; l < MATRIX_SIZE; ++l) {
+        inputMatrix[index[i]][l] = inputMatrix[index[i]][l] - jTemp * inputMatrix[index[j]][l];
+      }
     }
   }
 }
 
 
 
-void gaussJordanInverse(int matrix[][MATRIX_SIZE]) {
-  float inverse[MATRIX_SIZE][MATRIX_SIZE];
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    for (int j = 0; j < MATRIX_SIZE; j++) {
-      inverse[i][j] = (float)matrix[i][j];
-    }
-  }
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    for (int j = 0; j < 2 * MATRIX_SIZE; j++) {
-      if (j == (i + MATRIX_SIZE)) {
-        inverse[i][j] = 1;
-      }
-    }
-  }
-  // partial pivoting
-  float d;
-  for (int i = MATRIX_SIZE; i > 1; i--) {
-    if (matrix[i - 1][1] < inverse[i][1]) {
-      for (int j = 0; j < MATRIX_SIZE * 2; j++) {
-        d = inverse[i][j];
-        inverse[i][j] = inverse[i-1][j];
-        inverse[i-1][j] = d;
-      }
-    }
-  }
-  // reducing to diagonal matrix:
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    for (int j = 0; j < MATRIX_SIZE; j++) {
-      if (j != i) {
-        d = inverse[j][i] / inverse[i][i];
-        for (int k = 1; k < MATRIX_SIZE * 2; k++) {
-          inverse[j][k]-= inverse[i][k] * d;
-        }
-      }
-    }
-  }
-  // reducing to unit matrix
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    d = inverse[i][i];
-    for (int j = 0; j < MATRIX_SIZE * 2; j++) {
-      inverse[i][j] = inverse[i][j] / d;
-    }
-  }
+template <class T>
+void invertMatrix(T** inputMatrix, T** outputMatrix, T** tempMatrix) {
+  int index[MATRIX_SIZE];
 
-  printMatrix(inverse);
+  auto start = std::chrono::system_clock::now();
+  // transform the matrix into an upper triangle
+  calculateGaussian(inputMatrix, index);
+  auto end = std::chrono::system_clock::now();
+  std::cout << "GaussTime: " << (end-start).count() << "\n";
 
+  start = std::chrono::system_clock::now();
+  // Update matrixB[i][j] with new ratios stored
+  #pragma omp parallel for
+  for (unsigned int i = 0; i < MATRIX_SIZE - 1; ++i) {
+    for (unsigned int j = i + 1; j < MATRIX_SIZE; ++j) {
+      for (unsigned int k = 0; k < MATRIX_SIZE; ++k) {
+        tempMatrix[index[j]][k] = tempMatrix[index[j]][k] - inputMatrix[index[j]][i] * tempMatrix[index[i]][k];
+      }
+    }
+  }
+  end = std::chrono::system_clock::now();
+  std::cout << "RatioLoop: " << (end-start).count() << "\n";
+
+  start = std::chrono::system_clock::now();
+  // Perform backward substitutions
+  #pragma omp parallel for
+  for (unsigned int i = 0; i < MATRIX_SIZE; ++i) {
+    outputMatrix[MATRIX_SIZE - 1][i] = tempMatrix[index[MATRIX_SIZE - 1]][i] / inputMatrix[index[MATRIX_SIZE - 1]][MATRIX_SIZE - 1];
+    for (int j = MATRIX_SIZE - 2; j >= 0; --j) {
+      outputMatrix[j][i] = tempMatrix[index[j]][i];
+      for (unsigned int k = j + 1; k < MATRIX_SIZE; ++k) {
+        outputMatrix[j][i] = outputMatrix[j][i] - inputMatrix[index[j]][k] * outputMatrix[k][i];
+      }
+      outputMatrix[j][i] = outputMatrix[j][i] / inputMatrix[index[j]][j];
+    }
+  }
+  end = std::chrono::system_clock::now();
+  std::cout << "BackSubst: " << (end - start).count() << "\n";
+  return; 
+} 
+
+
+template <class T>
+void validateMatrix(T** inputMatrix, T** outputMatrix) {
+  T** validateMatrix = (T**)malloc(MATRIX_SIZE * sizeof(T*));
+  validateMatrix[0] = (T*)malloc(MATRIX_SIZE*MATRIX_SIZE);
+  for (int i = 1; i < MATRIX_SIZE; i++) {
+    validateMatrix[i] = validateMatrix[0] + (MATRIX_SIZE * i);
+  }
+  for (unsigned int i = 0; i < MATRIX_SIZE; i++) {
+    for (unsigned int j = 0; j < MATRIX_SIZE; j++) {
+      validateMatrix[i][j] = 0;
+      for (unsigned int k = 0; k < MATRIX_SIZE; k++) {
+        validateMatrix[i][j] += inputMatrix[i][k] * outputMatrix[k][j];
+      }
+    }
+  }
+  std::cout << "Validation of matrix: " << std::endl;
+  printMatrix(validateMatrix);
+}
+
+template <class T>
+void initMatrix(T** matrix) {
+  #pragma omp parallel for
+  for (int i = 0; i < MATRIX_SIZE; i++) {
+    std::mt19937 generator(std::random_device{}());
+    std::uniform_real_distribution<T> distribution(0, 1000);
+    for (int j = 0; j < MATRIX_SIZE; j++) {
+      matrix[i][j] = distribution(generator);
+    }
+  }
+  return;
+}
+
+template <class T>
+void makeConsecutive(T** dest, T* source) {
+  for (int i = 0; i < MATRIX_SIZE; i++) {
+    dest[i] = source + i * MATRIX_SIZE;
+  }
   return;
 }
 
 
-
 int main(int argc, char **argv) {
   if (argc != 2) {
-    std::cerr << "Args wrong. Usage: ./matrix-inversion [shouldPrint]" << std::endl;
+    std::cerr << "Args wrong. Usage: ./matrix-inversion [shouldPrintMatrices]" << std::endl;
     exit(1);
   }
 
   int shouldPrint = atoi(argv[1]);
 
-  int matrix[MATRIX_SIZE][MATRIX_SIZE];
-  initMatrix(matrix);
-  if (shouldPrint) {
-    printMatrix(matrix);
+  double** inputMatrix = new double*[MATRIX_SIZE];
+  double* inputData = new double[MATRIX_SIZE * MATRIX_SIZE];
+  makeConsecutive(inputMatrix, inputData);
+
+  double **outputMatrix = new double*[MATRIX_SIZE];
+  double* outputData = new double[MATRIX_SIZE * MATRIX_SIZE];
+  makeConsecutive(outputMatrix, outputData);
+
+  double** tempMatrix = new double*[MATRIX_SIZE];
+  double* tempData = new double[MATRIX_SIZE * MATRIX_SIZE];
+  makeConsecutive(tempMatrix, tempData);
+  for (unsigned int i = 0; i < MATRIX_SIZE; i++) {
+    tempMatrix[i][i] = 1;
   }
-  gaussJordanInverse(matrix);
+
+
+  initMatrix(inputMatrix);
+  if (shouldPrint) {
+    printMatrix(inputMatrix);
+  }
+  
+  auto start = std::chrono::system_clock::now();
+  invertMatrix(inputMatrix, outputMatrix, tempMatrix);
+  auto end = std::chrono::system_clock::now();
+  std::cout << "Mult Time: " << (end - start).count() << "\n";
+
+  if (shouldPrint) {
+    std::cout << "Inverted Matrix" << std::endl;
+    printMatrix(outputMatrix);
+  }
+
+  if (shouldPrint) {
+    validateMatrix(inputMatrix, outputMatrix);
+  }
+
   return 0;
 }
 
