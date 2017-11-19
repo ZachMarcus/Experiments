@@ -1,5 +1,4 @@
 
-
 #include <iostream>
 #include <chrono>
 #include <cstdlib>
@@ -12,7 +11,8 @@ const int MATRIX_SIZE = 1000;
 // OR Look into CHOL2inv from Fortran
 // OR USE DPOTRI from FORTRAN
 
-
+// I didn't want to look up the header to find where this was
+// Then it turns out using this is faster
 template<class T>
 T abs(T input) {
   if (input < 0) {
@@ -35,12 +35,12 @@ void printMatrix(T** matrix) {
 template<class T>
 void calculateGaussian(T** inputMatrix, int index[]) {
   T factors[MATRIX_SIZE];
-  // initialize index array 
+  // initialize array to store indices
   for (unsigned int i = 0; i < MATRIX_SIZE; i++) {
     index[i] = i;
   }
 
-  // find the rescaling factors, one from each row
+  // find the factor for each row in the matrix
  // #pragma omp parallel for
   for (unsigned int i = 0; i < MATRIX_SIZE; ++i) {
     T factor = 0.;
@@ -54,7 +54,7 @@ void calculateGaussian(T** inputMatrix, int index[]) {
     factors[i] = factor;
   }
   
-  // search pivoting element from each column
+  // find pivot for a given column
   int k = 0;
 //  #pragma omp parallel
   for (unsigned int j = 0; j < MATRIX_SIZE - 1; ++j) {
@@ -69,15 +69,15 @@ void calculateGaussian(T** inputMatrix, int index[]) {
       }
     }
 
-    // interchange rows according to the pivoting order
+    // use pivoting order
     int iTemp = index[j];
     index[j] = index[k];
     index[k] = iTemp;
     for (unsigned int i = j + 1; i < MATRIX_SIZE; ++i) {
       T jTemp = inputMatrix[index[i]][j] / inputMatrix[index[j]][j];
-      // record pivoting ratios below the diagonal
+      // take the diagonal and make sure those below it have the new pivot
       inputMatrix[index[i]][j] = jTemp;
-      // Modify other elements accordingly
+      // Other items in inputMatrix gotta get updated
       for (unsigned int l = j + 1; l < MATRIX_SIZE; ++l) {
         inputMatrix[index[i]][l] = inputMatrix[index[i]][l] - jTemp * inputMatrix[index[j]][l];
       }
