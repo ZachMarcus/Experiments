@@ -7,11 +7,11 @@ LDFLAGS=
 
 default: all
 
-matrix-matrix: matrix-matrix.c
+matrix-matrix: matrix-matrix.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-l3-matrix: l3-matrix.c
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+l3-matrix: l3-matrix.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 matrix-original: matrix-original.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
