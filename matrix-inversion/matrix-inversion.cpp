@@ -44,6 +44,7 @@ void calculateGaussian(T** inputMatrix, int index[]) {
  // #pragma omp parallel for
   for (unsigned int i = 0; i < MATRIX_SIZE; ++i) {
     T factor = 0.;
+    //#pragma omp parallel for reduction(max:factor)
     for (unsigned int j = 0; j < MATRIX_SIZE; ++j) {
       T factorTemp = abs(inputMatrix[i][j]);
       if (factorTemp > factor) {
@@ -98,6 +99,7 @@ void invertMatrix(T** inputMatrix, T** outputMatrix, T** tempMatrix) {
 
   start = std::chrono::system_clock::now();
   // Update matrixB[i][j] with new ratios stored
+  // NOTE: Should consider using blocking here for better spatial locality
   #pragma omp parallel for
   for (unsigned int i = 0; i < MATRIX_SIZE - 1; ++i) {
     for (unsigned int j = i + 1; j < MATRIX_SIZE; ++j) {
@@ -177,16 +179,16 @@ int main(int argc, char **argv) {
 
   int shouldPrint = atoi(argv[1]);
 
-  double** inputMatrix = new double*[MATRIX_SIZE];
-  double* inputData = new double[MATRIX_SIZE * MATRIX_SIZE];
+  float** inputMatrix = new float*[MATRIX_SIZE];
+  float* inputData = new float[MATRIX_SIZE * MATRIX_SIZE];
   makeConsecutive(inputMatrix, inputData);
 
-  double **outputMatrix = new double*[MATRIX_SIZE];
-  double* outputData = new double[MATRIX_SIZE * MATRIX_SIZE];
+  float** outputMatrix = new float*[MATRIX_SIZE];
+  float* outputData = new float[MATRIX_SIZE * MATRIX_SIZE];
   makeConsecutive(outputMatrix, outputData);
 
-  double** tempMatrix = new double*[MATRIX_SIZE];
-  double* tempData = new double[MATRIX_SIZE * MATRIX_SIZE];
+  float** tempMatrix = new float*[MATRIX_SIZE];
+  float* tempData = new float[MATRIX_SIZE * MATRIX_SIZE];
   makeConsecutive(tempMatrix, tempData);
   for (unsigned int i = 0; i < MATRIX_SIZE; i++) {
     tempMatrix[i][i] = 1;
