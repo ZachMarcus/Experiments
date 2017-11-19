@@ -12,6 +12,15 @@ double CLOCK() {
 }
 
 
+template <class T>
+void makeConsecutive(T** dest, T* source, unsigned int size) {
+  for (int i = 0; i < size; i++) {
+    dest[i] = source + i * size;
+  }
+  return;
+}
+
+
 int main(int argc, char **argv) {
   if (argc != 3) {
     printf("Usage: ./matrix-matrix [MatrixDimension] [TileSize]\n");
@@ -25,15 +34,25 @@ int main(int argc, char **argv) {
 
   // favor a dynamic allocation to allow for command-line
   // determination of matrix size
-  int **a = (int**)malloc(matrixSize * sizeof(int*));
-  int **b = (int**)malloc(matrixSize * sizeof(int*));
-  int **c = (int**)malloc(matrixSize * sizeof(int*));
-  for (int size = 0; size < matrixSize; size++) {
-    a[size] = (int*)malloc(matrixSize * sizeof(int));
-    b[size] = (int*)malloc(matrixSize * sizeof(int));
-    // calloc - this needs to be 0 initialized anyway, may as well do it here
-    c[size] = (int*)calloc(matrixSize, sizeof(int));
-  }
+//  int **a = (int**)malloc(matrixSize * sizeof(int*));
+//  int **b = (int**)malloc(matrixSize * sizeof(int*));
+//  int **c = (int**)malloc(matrixSize * sizeof(int*));
+//  for (int size = 0; size < matrixSize; size++) {
+//    a[size] = (int*)malloc(matrixSize * sizeof(int));
+//    b[size] = (int*)malloc(matrixSize * sizeof(int));
+//    // calloc - this needs to be 0 initialized anyway, may as well do it here
+//    c[size] = (int*)calloc(matrixSize, sizeof(int));
+//  }
+
+  int** a = new int*[matrixSize];
+  int* aData = new int[matrixSize * matrixSize];
+  makeConsecutive(a, aData, matrixSize);
+  int** b = new int*[matrixSize];
+  int* bData = new int[matrixSize * matrixSize];
+  makeConsecutive(b, bData, matrixSize);
+  int** c = new int*[matrixSize];
+  int* cData = new int[matrixSize * matrixSize];
+  makeConsecutive(c, cData, matrixSize);
 
   // fill array a with meaningful values
   for (i = 0; i < matrixSize; i++) {

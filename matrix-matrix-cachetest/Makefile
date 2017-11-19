@@ -1,13 +1,14 @@
 
-
-CXX=gcc
+CC=gcc
+CXX=g++
 CFLAGS=-O0 -Wall -std=c11
+CXXFLAGS=-O0 -Wall -std=c++11
 LDFLAGS=
 
 default: all
 
 matrix-matrix: matrix-matrix.c
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 l3-matrix: l3-matrix.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
