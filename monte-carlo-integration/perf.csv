@@ -1,0 +1,6 @@
+Size,TimeOneProcess(s),TimeTwoProcess(s),TimeFourProcess(s),TimeEightProcess(s),TimeSixteenProcess(s)
+2097152,4.886,4.642,5.085,4.591,5.239
+8388608,5.318,5.791,5.484,5.149,5.259
+33554432,6.651,6.619,6.923,5.963,7.433
+134217728,9.671,9.968,10.723,10.791,10.933
+536870912,results,reach,overflow,for,pi
