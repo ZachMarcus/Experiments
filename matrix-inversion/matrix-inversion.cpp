@@ -210,9 +210,17 @@ int main(int argc, char **argv) {
     printMatrix(outputMatrix);
   }
 
-  if (shouldPrint) {
-    validateMatrix(inputMatrix, outputMatrix);
-  }
+//  if (shouldPrint) {
+//    std::cout << "Matrix Times its Inverse" << std::endl;
+//    validateMatrix(inputMatrix, outputMatrix);
+//  }
+
+  delete[] inputData;
+  delete[] inputMatrix;
+  delete[] outputData;
+  delete[] outputMatrix;
+  delete[] tempData;
+  delete[] tempMatrix;
 
   return 0;
 }
