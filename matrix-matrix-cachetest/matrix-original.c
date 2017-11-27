@@ -1,9 +1,9 @@
 #define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
-#include <stdlib.h>
+#include<stdlib.h>
 #include <time.h>
-#define M 256
-//#define B 32
+#define M 768
+#define B 64
 
 double CLOCK() {
         struct timespec t;
@@ -11,15 +11,8 @@ double CLOCK() {
         return (t.tv_sec * 1000)+(t.tv_nsec*1e-6);
 }
 
-
 int main(int argc, char **argv)
 {
-    if (argc != 2) {
-      printf("Error: Usage: ./matrix-original [blockSize]\n");
-      return -1;
-    }
-
-    int B = atoi(argv[1]);
     int i,j,k,jj,kk,en;
     double start, finish, total, sum;
     int a[M][M], b[M][M], c[M][M];
@@ -52,7 +45,7 @@ int main(int argc, char **argv)
 
     finish = CLOCK();
     total = finish - start;
-    printf("%f\n", total);
+    printf("Time for the loop = %f\n", total);
 
     return 0;
 }
