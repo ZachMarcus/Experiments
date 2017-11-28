@@ -11,7 +11,7 @@ def runTest(matrix, tile):
 
 def run_l3(matrix_size):
     process = subprocess.check_output(["./l3-matrix", str(matrix_size)])
-    return float(process.replace("\n",""))
+    return float(process.replace("\n","")) / (matrix_size **3)
 
 
 def runTests(first_bound, second_bound, test_file):
@@ -39,7 +39,7 @@ def makeCheck():
 
 if __name__ == "__main__":
     makeCheck()
-    runTests(4, 600, "output.csv")
+    runTests(4, 700, "output.csv")
 
 
 
