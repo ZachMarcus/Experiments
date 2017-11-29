@@ -56,6 +56,13 @@ public:
     return;
   }
 
+  bool isEmpty() {
+    if (length == 0) {
+      return true;
+    }
+    return false;
+  }
+
 
 private:
   int length;
@@ -119,7 +126,16 @@ int main(int argc, char**argv) {
   }
 
   std::vector<int> distFromSource(numCities+1, max_int);
-  std::vector<int> visited;
+  distFromSource[rootCity] = 0;
+
+  std::cout << "dists\n";
+  for (auto i : distFromSource) {
+    std::cout << i << " ";
+  }
+  std::cout << std::endl;
+
+  std::vector<int> predecessors(numCities+1);
+  std::vector<bool> visited(numCities+1);
   MinHeap minHeap;
 
   // don't insert the root city the same
@@ -131,7 +147,32 @@ int main(int argc, char**argv) {
     }
   }
 
+  std::vector<int> connectedCities;
+  while (!minHeap.isEmpty()) {
+    connectedCities.clear();
+    City tempCity = minHeap.top();
+    minHeap.pop();
+    // mark the current City as visited
+    visited.at(tempCity.cityNumber) = true;
+    // now find edges from the adjacency list
+    for (int i = 1; i <= numCities; i++) {
+      if (adjacencyList.at(tempCity.cityNumber).at(i) != 0) {
+        connectedCities.push_back(i);
+      }
+    }
 
+    for (auto i : connectedCities) {
+      std::cout << "City " << i << 
+      int currentWeight = distFromSource[i];
+      int newWeight = adjacencyList.at(tempCity.cityNumber).at(i) + distFromSource[tempCity.cityNumber];
+      if (newWeight < currentWeight) {
+        std::cout << "Updating City " << i << " from distance " << currentWeight << " to distance " << newWeight << std::endl;
+        predecessors[i] = tempCity.cityNumber;
+        distFromSource[i] = newWeight;
+        // now need to update the minHeap somehow
+      }
+    }
+  }
 
 
 
