@@ -10,6 +10,7 @@ class City:
         self.weight = weight
         self.outgoing_neighbors = {} # keys are city nums, vals are weights
         self.incoming_neighbors = {} # keys are city nums, vals are weights
+        self.routes_left = 50
 
     def __eq__(self, rhs):
         return not self.weight < rhs.weight and not rhs.weight < self.weight
