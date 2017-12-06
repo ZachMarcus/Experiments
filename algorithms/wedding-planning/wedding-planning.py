@@ -47,8 +47,15 @@ class Heap_Map(dict):
         if len(self) == 0:
             print('Heap_dictionary is empty')
         temp_heap = self.min_heap
+#        print('Pop')
+#        for item in temp_heap:
+#            for thing in item:
+#                print(thing)
+#        print('dang')
+#        print(type(temp_heap[0]))
         while temp_heap[0][1] not in self or self[temp_heap[0][1]] != temp_heap[0][0]:
             last_heap_item = temp_heap.pop()
+#            print(type(last_heap_item))
             where_to_put_it = 0
             running = True
             while running:
@@ -61,7 +68,7 @@ class Heap_Map(dict):
                 if running:
                     temp_heap[where_to_put_it] = temp_heap[child_index]
                     where_to_put_it = child_index
-        return temp_heap[0][1]
+        return temp_heap[0][0]
 
     def __iter__(self):
         '''
@@ -152,9 +159,10 @@ class Wedding_Search:
         print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
 
         while len(self.heap) > 0:
+            print(len(self.heap))
             city = self.heap.pop() # Extract-Min
-            print(city)
-            print(type(city))
+#            print(city)
+#            print(type(city))
             self.visited_cities.append(city) # S := S Union with new City
             for outgoing, weight in city.outgoing_neighbors.items():
                 curr_dist = self.distances[city.number]
