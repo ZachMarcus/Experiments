@@ -149,25 +149,37 @@ class Wedding_Search:
         # Now fix the root city
         self.distances[root_city] = 0
 
-        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
+#        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
         for city in self.heap:
-            print(city)
+#            print('Visiting city: {}'.format(city))
             self.visited_cities.append(city) # S := S Union with new City
-            for outgoing, weight in city.outgoing_neighbors.items():
-                curr_dist = self.distances[outgoing]
+            for incoming, weight in city.incoming_neighbors.items():
+                curr_dist = self.distances[incoming]
                 other_dist = self.distances[city.number] + weight
                 if curr_dist > other_dist:
-                    self.distances[outgoing] = other_dist
-                    self.predecessors[outgoing] = city.number
+                    self.distances[incoming] = other_dist
+                    self.predecessors[incoming] = city.number
                     # Now we need to update the Heap
-                    self.heap[outgoing].weight = other_dist
+                    self.heap[incoming].weight = other_dist
+#            print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
             
-        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
-
+#        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
+        to_print = ''
+        for x in range(1, len(self.distances)):
+            if self.distances[x] != float('inf'):
+                to_print += str(self.distances[x]) + ' '
+            else:
+                to_print += '-1 '
+        to_print = to_print[:-1]
+        print(to_print)
 
 
 if __name__ == '__main__':
     wedding_search = Wedding_Search()
     wedding_search.start()
+
+
+
+
 
 
