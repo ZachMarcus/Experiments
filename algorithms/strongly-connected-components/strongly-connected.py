@@ -46,13 +46,26 @@ class Connected_Cities:
         self.finishing_order = [] # list of city.number, first elem finished first
         self.current_traversal_leader = -1
 
-    def reversed_DFS(self, city_number):
+    def forward_DFS(self, city_number):
+        print('Forward DFS: {}, leader={}'.format(city_number, self.current_traversal_leader))
         self.visited_cities[city_number] = True
         self.predecessors[city_number] = self.current_traversal_leader
         for outgoing_city in self.cities[city_number].outgoing_neighbors.keys():
             if self.visited_cities[outgoing_city] == False:
-                self.reversed_DFS(outgoing_city)
+                self.forward_DFS(outgoing_city)
+        # Do not need to mess with finishing order anymore
+        return
+
+
+    def reversed_DFS(self, city_number):
+        print('Reverse DFS: {}, leader={}'.format(city_number, self.current_traversal_leader))
+        self.visited_cities[city_number] = True
+        self.predecessors[city_number] = self.current_traversal_leader
+        for incoming_city in self.cities[city_number].incoming_neighbors.keys():
+            if self.visited_cities[incoming_city] == False:
+                self.reversed_DFS(incoming_city)
         self.finishing_order.append(city_number)
+        return
 
 
     def start(self):
@@ -120,6 +133,9 @@ class Connected_Cities:
                 self.forward_DFS(city_number)
 
 
+        
+
+
             # Using the finishing times, run DFS_main on G, not G rev
             # Process vertices in decreasing order of finishing times
             # For each vertex, leader[v] = vertex from which main loop reached v
@@ -142,11 +158,9 @@ class Connected_Cities:
 #            print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))'''
             
 #        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
-        to_print = ''
         for x in self.predecessors.keys():
-            to_print += str(self.predecessors[x]) + ' '
-        to_print = to_print[:-1]
-        print(to_print)
+            print('Leader[{}]={}'.format(x, self.predecessors[x]))
+
 
 
 if __name__ == '__main__':
