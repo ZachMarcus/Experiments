@@ -115,8 +115,8 @@ class Connected_Cities:
                 self.current_traversal_leader = city
                 self.reversed_DFS(city)
 
-        for x in self.finishing_order:
-            print('{} Finished'.format(x))
+#        for x in self.finishing_order:
+#            print('{} Finished'.format(x))
 
         for x in self.predecessors.keys():
             print('leader[{}]={}'.format(x, self.predecessors[x]))
@@ -132,32 +132,8 @@ class Connected_Cities:
                 # x = last item in the finishing times list
                 self.forward_DFS(city_number)
 
-
-        
-
-
-            # Using the finishing times, run DFS_main on G, not G rev
-            # Process vertices in decreasing order of finishing times
-            # For each vertex, leader[v] = vertex from which main loop reached v
-
-
-
-            '''
-            for incoming, weight in city.incoming_neighbors.items():
-                curr_dist = self.distances[incoming]
-                other_dist = self.distances[city.number] + weight
-                
-                if curr_dist > other_dist:
-                    self.distances[incoming] = other_dist
-                    self.predecessors[incoming] = city.number
-                    # Now we need to update the Heap
-                    if incoming in self.heap:
-                        self.heap[incoming].weight = other_dist
-#                    else:
-#                        print('{} Not in heap anymore'.format(incoming))
-#            print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))'''
-            
-#        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
+        # For each vertex, leader[v] = vertex from which main loop reached v
+        # vertices with the same leader are part of the same SCC
         for x in self.predecessors.keys():
             print('Leader[{}]={}'.format(x, self.predecessors[x]))
 
