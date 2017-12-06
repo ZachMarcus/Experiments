@@ -97,80 +97,13 @@ class Heap_Map(dict):
             self[key] = val
         return self[key]
 
-'''
-class Min_Heap:
-    def __init__(self):
-        self.length = 0
-        self.cities = []
-
-    def insert(self, city):
-        self.cities.push_back(city)
-        self.bubble_up(self.length)
-        self.length += 1
-        return
-
-    def top(self):
-        if self.length == 0:
-            print('Error, cities is empty')
-            return
-        return cities[0]
-
-    def pop(self):
-        if self.length == 0:
-            return
-        length -= 1
-        temp_city = self.cities[0]
-        self.cities[0] = self.cities[length]
-        self.cities = self.cities[:-1]
-        self.bubble_down(0)
-        return
-
-    def is_empty(self):
-        return self.length == 0
-
-    def heapify(self):
-        for i in range(self.length - 1, -1, -1):
-            self.bubble_down(i)
-
-    def bubble_down(self, vertex):
-        left_child_ind = 2 * vertex + 1
-        right_child_ind = 2 * vertex + 2
-        min_vertex = vertex
-        # Check if we're at a leaf
-        if left_child_ind >= self.length:
-            return
-        if self.cities[vertex].weight > self.cities[left_child_ind].weight:
-            min_vertex = left_child_ind
-        if right_child_ind < self.length and self.cities[min_vertex].weight > self.cities[right_child_ind].weight:
-            min_vertex = right_child_ind
-        if min_vertex != vertex:
-            # Perform a swap
-            temp_weight, temp_number = (self.cities[vertex].weight, self.cities[vertex].number)
-            self.cities[vertex].weight = self.cities[min_vertex].weight
-            self.cities[vertex].number = self.cities[min_vertex].number
-            self.cities[min_vertex].weight = temp_weight
-            self.cities[min_vertex].number = temp_number
-            self.bubble_down(min_vertex)
-        return
-
-    def bubble_up(self, vertex):
-        if vertex == 0:
-            return
-        max_vertex = int((vertex - 1) / 2)
-        if self.cities[max_vertex].weight > self.cities[vertex].weight:
-            temp_weight, temp_number = (self.cities[vertex].weight, self.cities[vertex].number)
-            self.cities[vertex].weight = self.cities[max_vertex].weight
-            self.cities[vertex].number = self.cities[max_vertex].number
-            self.cities[max_vertex].weight = temp_weight
-            self.cities[max_vertex].number = temp_number
-            self.bubble_up(max_vertex)
-        return
-'''
-
 
 class Wedding_Search:
     def __init__(self):
         self.heap = Heap_Map()
+        self.distances = []
+        self.predecessors = []
+        self.visited_cities = []
 
     def start(self):
         num_cities = -1
@@ -209,6 +142,30 @@ class Wedding_Search:
 
         for key, val in self.heap.items():
             print('Key: {}, Val: {}'.format(key, val))
+
+        self.distances.append(None) # The cities are 1-indexed
+        self.predecessors.append(None) # The predecessors are 1-indexed
+        for city in self.heap.keys():
+            self.distances.append(float('inf'))
+            self.predecessors.append(None)
+
+        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
+
+        while len(self.heap) > 0:
+            city = self.heap.pop() # Extract-Min
+            print(city)
+            print(type(city))
+            self.visited_cities.append(city) # S := S Union with new City
+            for outgoing, weight in city.outgoing_neighbors.items():
+                curr_dist = self.distances[city.number]
+                other_dist = self.distances[outgoing] + weight
+                if curr_dist > other_dist:
+                    self.distances[outgoing] = other_dist
+                    self.predecessors[outgoing] = city.number
+                    # Now we need to update the Heap
+                    self.heap[outgoing].weight = other_dist
+            
+        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
 
 
 
