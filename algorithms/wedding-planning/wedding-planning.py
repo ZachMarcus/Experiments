@@ -46,39 +46,33 @@ class Heap_Map(dict):
     def pop(self):
         if len(self) == 0:
             print('Heap_dictionary is empty')
-        temp_heap = self.min_heap
-#        print('Pop')
-#        for item in temp_heap:
-#            for thing in item:
-#                print(thing)
-#        print('dang')
-#        print(type(temp_heap[0]))
-        while temp_heap[0][1] not in self or self[temp_heap[0][1]] != temp_heap[0][0]:
-            last_heap_item = temp_heap.pop()
-#            print(type(last_heap_item))
+#        temp_heap = self.min_heap
+        while self.min_heap[0][1] not in self or self[self.min_heap[0][1]] != self.min_heap[0][0]:
+            last_heap_item = self.min_heap.pop()
             where_to_put_it = 0
             running = True
             while running:
                 child_index = 2 * where_to_put_it + 1
-                if child_index + 1 < len(temp_heap) and temp_heap[child_index] > temp_heap[child_index + 1]:
+                if child_index + 1 < len(self.min_heap) and self.min_heap[child_index] > self.min_heap[child_index + 1]:
                     child_index += 1
-                if child_index >= len(temp_heap) or last_heap_item <= temp_heap[child_index]:
-                    temp_heap[where_to_put_it] = last_heap_item
+                if child_index >= len(self.min_heap) or last_heap_item <= self.min_heap[child_index]:
+                    self.min_heap[where_to_put_it] = last_heap_item
                     running = False
                 if running:
-                    temp_heap[where_to_put_it] = temp_heap[child_index]
+                    self.min_heap[where_to_put_it] = self.min_heap[child_index]
                     where_to_put_it = child_index
-        return temp_heap[0][0]
+        return self.min_heap[0][0]
 
     def __iter__(self):
         '''
         Destroy elements as it iterates
+        For use in main Dijkstra algorithm
         '''
         def iteration_lambda():
             while len(self) > 0:
                 temp = self.pop()
                 yield temp
-                del self[temp]
+                del self[temp.number]
         return iteration_lambda()
 
     def __setitem__(self, key, val):
@@ -147,26 +141,21 @@ class Wedding_Search:
         root.weight = 0
         self.heap[root_city] = root
 
-        for key, val in self.heap.items():
-            print('Key: {}, Val: {}'.format(key, val))
-
         self.distances.append(None) # The cities are 1-indexed
         self.predecessors.append(None) # The predecessors are 1-indexed
         for city in self.heap.keys():
             self.distances.append(float('inf'))
             self.predecessors.append(None)
+        # Now fix the root city
+        self.distances[root_city] = 0
 
         print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
-
-        while len(self.heap) > 0:
-            print(len(self.heap))
-            city = self.heap.pop() # Extract-Min
-#            print(city)
-#            print(type(city))
+        for city in self.heap:
+            print(city)
             self.visited_cities.append(city) # S := S Union with new City
             for outgoing, weight in city.outgoing_neighbors.items():
-                curr_dist = self.distances[city.number]
-                other_dist = self.distances[outgoing] + weight
+                curr_dist = self.distances[outgoing]
+                other_dist = self.distances[city.number] + weight
                 if curr_dist > other_dist:
                     self.distances[outgoing] = other_dist
                     self.predecessors[outgoing] = city.number
