@@ -16,7 +16,7 @@ def generate_examples(num_cities, num_edges, root_city):
 
 
 cities = randint(5, 20)
-edges = randint(5, 50)
+edges = randint(20, 150)
 root = randint(1, cities)
 
 generate_examples(cities, edges, root)

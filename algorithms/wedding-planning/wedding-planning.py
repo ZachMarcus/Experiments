@@ -137,6 +137,12 @@ class Wedding_Search:
                 city = self.heap[dst_city]
                 city.incoming_neighbors[src_city] = path_weight
                 self.heap[dst_city] = city
+        # Now fix the case where some vertices just don't do anything
+        for x in range(1, num_cities + 1):
+            if x not in self.heap:
+                self.heap[x] = City(x, float('inf'))
+# FIX THIS NOW
+
         # Now fix the root city:
         root = self.heap[root_city]
         root.weight = 0
@@ -157,11 +163,15 @@ class Wedding_Search:
             for incoming, weight in city.incoming_neighbors.items():
                 curr_dist = self.distances[incoming]
                 other_dist = self.distances[city.number] + weight
+                
                 if curr_dist > other_dist:
                     self.distances[incoming] = other_dist
                     self.predecessors[incoming] = city.number
                     # Now we need to update the Heap
-                    self.heap[incoming].weight = other_dist
+                    if incoming in self.heap:
+                        self.heap[incoming].weight = other_dist
+#                    else:
+#                        print('{} Not in heap anymore'.format(incoming))
 #            print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
             
 #        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
