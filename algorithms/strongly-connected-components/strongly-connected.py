@@ -40,10 +40,20 @@ class Stack:
 class Connected_Cities:
     def __init__(self):
         self.stack = Stack()
-        self.predecessors = []
+        self.predecessors = {}
         self.visited_cities = {}
         self.cities = {}
-        self.finishing_order = [] # list of city.number
+        self.finishing_order = [] # list of city.number, first elem finished first
+        self.current_traversal_leader = -1
+
+    def reversed_DFS(self, city_number):
+        self.visited_cities[city_number] = True
+        self.predecessors[city_number] = self.current_traversal_leader
+        for outgoing_city in self.cities[city_number].outgoing_neighbors.keys():
+            if self.visited_cities[outgoing_city] == False:
+                self.reversed_DFS(outgoing_city)
+        self.finishing_order.append(city_number)
+
 
     def start(self):
         num_cities = -1
@@ -76,22 +86,40 @@ class Connected_Cities:
         # Now fix the case where some vertices just don't do anything
         for x in range(1, num_cities + 1):
             if x not in self.cities:
-                self.heap[x] = City(x)
+                temp = City(x)
+                self.cities[x] = temp
 
-        self.predecessors.append(None) # The predecessors are 1-indexed
         for city in self.cities.keys():
-            self.predecessors.append(None)
+            self.predecessors[city] = city
 
         # Keep visited dictionary, we've visited 0 cities
-        for city in self.cities:
-            self.visited_cities[city.number] = False
+        for city in self.cities.keys():
+            self.visited_cities[city] = False
 
         # For each node, if unvisited, do self.reversed_DFS(city_number) on graph starting from there
-        for city in self.cities:
-            if self.visited_cities[city.number] == False:
-                self.reversed_DFS(city.number)
+        for city in self.cities.keys():
+            if self.visited_cities[city] == False:
+                self.current_traversal_leader = city
+                self.reversed_DFS(city)
 
-            # Within the reversed_DFS, at end of function mark the finishing time
+        for x in self.finishing_order:
+            print('{} Finished'.format(x))
+
+        for x in self.predecessors.keys():
+            print('leader[{}]={}'.format(x, self.predecessors[x]))
+
+        for city in self.cities.keys():
+            self.visited_cities[city] = False
+
+        # Now traverse again, but in forward order and using finishing times
+        for x in range(num_cities - 1, -1, -1):
+            city_number = self.finishing_order[x]
+            if self.visited_cities[city_number] == False:
+                self.current_traversal_leader = city_number
+                # x = last item in the finishing times list
+                self.forward_DFS(city_number)
+
+
             # Using the finishing times, run DFS_main on G, not G rev
             # Process vertices in decreasing order of finishing times
             # For each vertex, leader[v] = vertex from which main loop reached v
@@ -115,7 +143,7 @@ class Connected_Cities:
             
 #        print('Distances: {}\nPredecessors: {}'.format(self.distances, self.predecessors))
         to_print = ''
-        for x in range(1, len(self.predecessors)):
+        for x in self.predecessors.keys():
             to_print += str(self.predecessors[x]) + ' '
         to_print = to_print[:-1]
         print(to_print)
