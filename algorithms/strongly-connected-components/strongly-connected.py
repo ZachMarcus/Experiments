@@ -50,6 +50,7 @@ class Connected_Cities:
         for outgoing_city in self.cities[city_number].outgoing_neighbors.keys():
             if self.visited_cities[outgoing_city] == False: # unvisited
                 self.forward_DFS(outgoing_city)
+#        self.finishing_order.append(city_number)
         return
 
 
@@ -107,27 +108,37 @@ class Connected_Cities:
                 # x = last item in the finishing times list
                 self.forward_DFS(city_number)
 
-        # For each vertex, leader[v] = vertex from which main loop reached v
-        # vertices with the same leader are part of the same SCC
 
-        # NExt up: construct the new graph using just the leaders listed
-        # Track how many times a city gets visited
-       
-        # self.leaders_and_visited_count tracks total number of leaders
-        # let's do a DFS from just those and track visits
-        # Remember to reset visits
-        for leader in self.leaders.keys():
-            for city_number in self.visited_cities.keys():
-                self.visited_cities[city_number] = False
-            self.final_DFS(leader)
+        # The alternative to this is to look through the strongly connected
+        # components and find if there is a singular component with
+        # no outgoing (might be incoming?) edges
+        for city_number in self.visited_cities.keys():
+            self.visited_cities[city_number] = False
+        scc = {} # key is leader, value is outgoing edges
+        for city, pred in self.predecessors.items():
+            if pred in scc.keys():
+                scc[pred].append(city)
+            else:
+                scc[pred] = [city]
 
-        desired_length = len(self.leaders)
-        final_count = 0
-        
-        for city, visit_count in self.final_visited_count.items():
-            if visit_count == desired_length:
-                final_count += 1
-        print(final_count)
+        # Once we have the SCCs in that grouping,
+        # We know that: if there is only one SCC without any
+        # outgoing connections, then all of those are roots
+        # If there are more than that, then there aren't any
+        counter = {}
+        for leader, cities in scc.items():
+            has_outgoing = False
+            for city in cities:
+                for neighbor in self.cities[city].outgoing_neighbors:
+                    if self.predecessors[neighbor] != leader:
+                        has_outgoing = True
+            if not has_outgoing:
+                counter[leader] = len(cities)
+        if len(counter.keys()) == 1:
+            print(list(counter.values())[0])
+        else:
+            print(0)
+        return
 
 
 if __name__ == '__main__':
