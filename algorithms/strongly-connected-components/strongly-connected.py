@@ -69,39 +69,23 @@ class Connected_Cities:
         first_line = sys.stdin.readline().rstrip().split(' ')
         num_cities = int(first_line[0])
         num_edges = int(first_line[1])
-        for x in range(0, num_edges):
-            # src, dest, weight
-            temp = sys.stdin.readline().rstrip().split(' ') # U, V, D
-            src_city = int(temp[0])
-            dst_city = int(temp[1])
 
-            if src_city not in self.cities:
-                city = City(src_city)
-                city.outgoing_neighbors[dst_city] = 1
-                self.cities[src_city] = city
-            else: # Add value to outgoing neighbors adjacency list
-                city = self.cities[src_city]
-                city.outgoing_neighbors[dst_city] = 1
-                self.cities[src_city] = city
-            if dst_city not in self.cities:
-                city = City(dst_city)
-                city.incoming_neighbors[src_city] = 1
-                self.cities[dst_city] = city
-            else: # Add value to incoming neighbors adjacency list
-                city = self.cities[dst_city]
-                city.incoming_neighbors[src_city] = 1
-                self.cities[dst_city] = city
         # Now fix the case where some vertices just don't do anything
         for x in range(1, num_cities + 1):
             if x not in self.cities:
                 temp = City(x)
                 self.cities[x] = temp
 
+        for x in range(0, num_edges):
+            # src, dest, weight
+            temp = sys.stdin.readline().rstrip().split(' ') # U, V, D
+            src_city = int(temp[0])
+            dst_city = int(temp[1])
+            self.cities[src_city].outgoing_neighbors[dst_city] = 1
+            self.cities[dst_city].incoming_neighbors[src_city] = 1
+
         for city in self.cities.keys():
             self.predecessors[city] = city
-
-        # Keep visited dictionary, we've visited 0 cities
-        for city in self.cities.keys():
             self.visited_cities[city] = False
 
         # For each node, if unvisited, do self.reversed_DFS(city_number) on graph starting from there
