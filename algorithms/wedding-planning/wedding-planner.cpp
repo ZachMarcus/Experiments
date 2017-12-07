@@ -45,7 +45,7 @@ public:
 
     void swap(int leftIndex, int rightIndex) {
         int tempWeight = cities[leftIndex].weight;
-        int tempNumber = cities[rightIndex].number;
+        int tempNumber = cities[leftIndex].number;
         cities[leftIndex].weight = cities[rightIndex].weight;
         cities[leftIndex].number = cities[rightIndex].number;
         cities[rightIndex].weight = tempWeight;
@@ -158,30 +158,27 @@ public:
 
     std::unordered_map<int, bool> visitedCities;
     std::unordered_map<int, int> distances;
-    std::unordered_map<int, std::vector<int>> outgoingVertices;
+    std::unordered_map<int, std::unordered_map<int,int>> outgoingVertices;
     MinHeap minHeap;
 
     void plan() {
         int numCities, numEdges, rootCity;
         std::cin >> numCities >> numEdges >> rootCity;
-        std::cout << numCities << " " << numEdges << " " << rootCity << std::endl;
         for (int vertex = 1; vertex <= numCities; vertex++) {
-            std::unordered_map<int,int> innerDict;
-            std::pair<int, std::unordered_map<int,int>> temp = {vertex, innerDict};
-            outgoingVertices.insert(temp);
+            outgoingVertices.emplace(vertex, std::unordered_map<int,int>());
         }
 
         int srcCity, dstCity, pathWeight;
         for (int x = 0; x < numEdges; x++) {
             std::cin >> srcCity >> dstCity >> pathWeight;
-            outgoingVertices[dstCity].insert(std::make_pair<int,int>(srcCity, pathWeight));
+            outgoingVertices[dstCity].emplace(srcCity, pathWeight);
         }
 
         // Initialization
         for (int city = 1; city <= numCities; city++) {
-            visitedCities.insert(std::make_pair<int,bool>(city, false));
-            distances.insert(std::make_pair<int,int>(city, INT_MAX));
-            City tempCity = City(city, INT_MAX);
+            visitedCities.emplace(city, false);
+            distances.emplace(city, MAX_INT);
+            City tempCity = City(city, MAX_INT);
             minHeap.insert(tempCity);
         }
 
@@ -190,6 +187,7 @@ public:
 
         while (!minHeap.isEmpty()) {
             City city = minHeap.top();
+            minHeap.pop();
             visitedCities[city.number] = true;
             for (auto keyValue : outgoingVertices[city.number]) {
                 int vertex = keyValue.first;
@@ -201,7 +199,6 @@ public:
                     minHeap.update(vertex, newDist);
                 }
             }
-            minHeap.pop();
         }
 
         // Now output the results
