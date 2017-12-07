@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import collections
 import sys
 
 
@@ -21,81 +22,100 @@ class City:
     def __le__(self, rhs):
         return not rhs.weight < self.weight
 
-    def __str__(self):
-        ret = ''
-        ret += 'City Number: ' + str(self.number) + ' Weight: ' + str(self.weight)
-        return ret
 
-
-
-
-
-# Implements classic heap functionality in that you can get the smallest items
-# first, but also has good access times as a python dictionary
-class Heap_Map(dict):
+class Heap_Map(collections.MutableMapping):
     def __init__(self):
-        self.min_heap = []
-        dict.__init__(self)
+        self.heap = []
+        self.dic = dict()
+        self.update()
 
-    def pop(self):
-        if len(self) == 0:
-            print('Heap_dictionary is empty')
-#        temp_heap = self.min_heap
-        while self.min_heap[0][1] not in self or self[self.min_heap[0][1]] != self.min_heap[0][0]:
-            last_heap_item = self.min_heap.pop()
-            where_to_put_it = 0
-            running = True
-            while running:
-                child_index = 2 * where_to_put_it + 1
-                if child_index + 1 < len(self.min_heap) and self.min_heap[child_index] > self.min_heap[child_index + 1]:
-                    child_index += 1
-                if child_index >= len(self.min_heap) or last_heap_item <= self.min_heap[child_index]:
-                    self.min_heap[where_to_put_it] = last_heap_item
-                    running = False
-                if running:
-                    self.min_heap[where_to_put_it] = self.min_heap[child_index]
-                    where_to_put_it = child_index
-        return self.min_heap[0][0]
+    @staticmethod
+    def parent(i):
+        return ((i - 1) >> 1)
+
+    @staticmethod
+    def right(i):
+        return ((i + 1) << 1)
+
+    @staticmethod
+    def left(i):
+        return ((i << 1) + 1)
+
+    def clear(self):
+        del self.heap[:]
+        self.dic.clear()
+
+    def __setitem__(self, key, value):
+        if key in self.dic:
+            self.pop(key)
+        temp = []
+        temp.append(value)
+        temp.append(key)
+        temp.append(len(self))
+        self.dic[key] = temp
+        self.heap.append(temp)
+        self.bubble_down(len(self.heap) - 1)
+
+    def heapify(self, i):
+        left = self.left(i)
+        right = self.right(i)
+        elements = len(self.heap)
+        if left < elements and self.heap[left][0] < self.heap[i][0]:
+            lower_bound = left
+        else:
+            lower_bound = i
+        if right < elements and self.heap[right][0] < self.heap[lower_bound][0]:
+            lower_bound = right
+
+        if lower_bound != i:
+            self.swap(i, lower_bound)
+            self.heapify(lower_bound)
+
+    def bubble_down(self, key):
+        while key:
+            temp = self.parent(key)
+            if self.heap[temp][0] < self.heap[key][0]:
+                return
+            self.swap(key, temp)
+            key = temp
+
+    def swap(self, lhs, rhs):
+        temp = self.heap[lhs]
+        self.heap[lhs] = self.heap[rhs]
+        self.heap[rhs] = temp
+        self.heap[lhs][2] = lhs
+        self.heap[rhs][2] = rhs
+
+    def __delitem__(self, key):
+        temp = self.dic[key]
+        while temp[2]:
+            temp_parent = self.parent(temp[2])
+            parent = self.heap[temp_parent]
+            self.swap(temp[2], parent[2])
+        self.pop2()
+
+    def __getitem__(self, key):
+        return self.dic[key][0]
 
     def __iter__(self):
-        '''
-        Destroy elements as it iterates
-        For use in main Dijkstra algorithm
-        '''
-        def iteration_lambda():
-            while len(self) > 0:
-                temp = self.pop()
-                yield temp
-                del self[temp.number]
-        return iteration_lambda()
+        return iter(self.dic)
 
-    def __setitem__(self, key, val):
-        dict.__setitem__(self, key, val)
-        temp_heap = self.min_heap
-        if len(temp_heap) > 2 * len(self):
-            self.min_heap = [(value, key) for key, value in self.items()]
-            self.min_heap.sort()
+    def pop2(self):
+        temp = self.heap[0]
+        if len(self.heap) == 1:
+            self.heap.pop()
         else:
-            temp = (val, key)
-            where_to_put_it = len(temp_heap)
-            temp_heap.append(None)
-            while where_to_put_it > 0 and temp < temp_heap[(where_to_put_it - 1) // 2]:
-                temp_heap[where_to_put_it] = temp_heap[(where_to_put_it - 1) // 2]
-                where_to_put_it = (where_to_put_it - 1) // 2
-            temp_heap[where_to_put_it] = temp
+            self.heap[0] = self.heap.pop(-1)
+            self.heap[0][2] = 0
+            self.heapify(0)
+        del self.dic[temp[1]]
+        return temp[0]
 
-    def setdefault(self, key, val):
-        '''
-        A new version of setdefault
-        '''
-        if key not in self:
-            self[key] = val
-        return self[key]
+    def __len__(self):
+        return len(self.dic)
 
-
-
-
-
+    def top(self):
+        return self.heap[0][0]
 
 
 
@@ -131,32 +151,22 @@ class Wedding_Planner:
         for city in range(1, num_cities + 1):
             self.visited_cities[city] = False
             self.distances[city] = float('inf')
+            self.heap_map[city] = City(city, float('inf'))
 
         self.distances[root_city] = 0
+        self.heap_map[root_city] = City(root_city, 0)
 
-        # Actual algorithm
-        for city in range(1, num_cities + 1):
-            # Find unvisited vertex with minimum distances
-            minimum_vertex_val = float('inf')
-            minimum_vertex = -1
-            for city in range(1, num_cities + 1):
-                if self.visited_cities[city] == False and self.distances[city] < minimum_vertex_val:
-                    minimum_vertex = city
-                    minimum_vertex_val = self.distances[city]
-            if minimum_vertex == -1:
-                for city in range(1, num_cities + 1):
-                    if self.visited_cities[city] == False:
-                        minimum_vertex = city
-                        break
-            # REPLACE the above with the heap later.
-            # Now visit the found minimum vertex
-            self.visited_cities[minimum_vertex] = True
-            # And relax the adjacent edges to update the shortest path distance to neighbors
-            for vertex, weight in self.outgoing_vertices[minimum_vertex].items():
-                new_dist = self.distances[minimum_vertex] + weight
+        while len(self.heap_map) > 0:
+            min_city = self.heap_map.top()
+            self.heap_map.pop2()
+            self.visited_cities[min_city.number] = True
+            for vertex, weight in self.outgoing_vertices[min_city.number].items():
+                new_dist = self.distances[min_city.number] + weight
                 old_dist = self.distances[vertex]
                 if new_dist < old_dist:
                     self.distances[vertex] = new_dist
+                    self.heap_map[vertex] = City(vertex, new_dist)
+
 
         ret = ''
         for city in range(1, num_cities+1):
