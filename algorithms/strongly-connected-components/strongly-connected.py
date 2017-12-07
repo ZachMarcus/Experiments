@@ -23,24 +23,9 @@ class City:
             ret += '(' + str(key) + ',' + str(val) + ');'
         return ret
 
-class Stack:
-    def __init__(self):
-        self.items = []
-    def is_empty(self):
-        return self.items == []
-    def push(self, item):
-        self.items.append(item)
-    def pop(self):
-        return self.items.pop()
-    def peek(self):
-        return self.items[-1]
-    def size(self):
-        return len(self.items)
-
 
 class Connected_Cities:
     def __init__(self):
-        self.stack = Stack()
         self.predecessors = {}
         self.visited_cities = {}
         self.cities = {}
@@ -51,28 +36,28 @@ class Connected_Cities:
 
 
     def final_DFS(self, city_number):
-        self.visited_cities[city_number] = 1 # visited
+        self.visited_cities[city_number] = True # visited
         self.final_visited_count[city_number] = self.final_visited_count[city_number] + 1
         for outgoing_city in self.cities[city_number].outgoing_neighbors.keys():
-            if self.visited_cities[outgoing_city] == 0: # unvisited
+            if self.visited_cities[outgoing_city] == False: # unvisited
                 self.final_DFS(outgoing_city)
         return
 
 
     def forward_DFS(self, city_number):
-        self.visited_cities[city_number] += 1 # visited
+        self.visited_cities[city_number] = True # visited
         self.predecessors[city_number] = self.current_traversal_leader
         for outgoing_city in self.cities[city_number].outgoing_neighbors.keys():
-            if self.visited_cities[outgoing_city] == 1: # unvisited
+            if self.visited_cities[outgoing_city] == False: # unvisited
                 self.forward_DFS(outgoing_city)
         return
 
 
     def reversed_DFS(self, city_number):
-        self.visited_cities[city_number] += 1 # visited
+        self.visited_cities[city_number] = True # visited
         self.predecessors[city_number] = self.current_traversal_leader
         for incoming_city in self.cities[city_number].incoming_neighbors.keys():
-            if self.visited_cities[incoming_city] == 0: # unvisited
+            if self.visited_cities[incoming_city] == False: # unvisited
                 self.reversed_DFS(incoming_city)
         self.finishing_order.append(city_number)
         return
@@ -117,7 +102,7 @@ class Connected_Cities:
 
         # Keep visited dictionary, we've visited 0 cities
         for city in self.cities.keys():
-            self.visited_cities[city] = 0
+            self.visited_cities[city] = False
 
         # For each node, if unvisited, do self.reversed_DFS(city_number) on graph starting from there
         for city in self.cities.keys():
@@ -125,11 +110,14 @@ class Connected_Cities:
                 self.current_traversal_leader = city
                 self.reversed_DFS(city)
 
+        for city in self.cities.keys():
+            self.visited_cities[city] = False
+
         # Now traverse again, but in forward order and using finishing times
         for x in range(num_cities - 1, -1, -1):
             city_number = self.finishing_order[x]
             self.final_visited_count[city_number] = 0
-            if self.visited_cities[city_number] == 1: # unvisited
+            if self.visited_cities[city_number] == False: # unvisited
                 self.current_traversal_leader = city_number
                 self.leaders[city_number] = 0
                 # x = last item in the finishing times list
@@ -146,7 +134,7 @@ class Connected_Cities:
         # Remember to reset visits
         for leader in self.leaders.keys():
             for city_number in self.visited_cities.keys():
-                self.visited_cities[city_number] = 0
+                self.visited_cities[city_number] = False
             self.final_DFS(leader)
 
         desired_length = len(self.leaders)
