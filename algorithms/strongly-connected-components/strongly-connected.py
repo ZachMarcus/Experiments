@@ -4,13 +4,17 @@ import sys
 sys.setrecursionlimit(100000)
 
 
+
 class City:
+    '''
+    Class to represent a vertex 
+    Contains the number of the city, its outgoing and incoming routes
+    '''
     def __init__(self, number):
         self.number = number
         self.outgoing_neighbors = {} # keys are city nums, vals are weights
         self.incoming_neighbors = {} # keys are city nums, vals are weights
         self.routes_left = 50
-        self.reachable_cities = set()
 
     def __str__(self):
         ret = ''
@@ -25,6 +29,12 @@ class City:
 
 
 class Connected_Cities:
+    '''
+    Major workhorse for this problem
+    Runs Kosaraju's strongly connected components algorithm
+    Then examines outgoing edges from those components
+    To determine all universal roots
+    '''
     def __init__(self):
         self.predecessors = {}
         self.visited_cities = {}
