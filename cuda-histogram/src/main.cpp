@@ -22,7 +22,18 @@ double CLOCK() {
 
 int main( int argc, const char** argv ) { 
         // arg 1: Input image 
-        // arg 2: output file name
+        // arg 2: histogram value minimum (optional)
+        // arg 3: histogram value maximum (optional)
+        int minimumHisto = 0;
+        int maximumHisto = 255;
+
+        if (argc > 2) {
+            minimumHisto = atoi(argv[2]);
+        }
+        if (argc > 3) {
+            maximumHisto = atoi(argv[3]);
+        }
+
         
         double start_gpu, finish_gpu;
         
@@ -47,21 +58,16 @@ int main( int argc, const char** argv ) {
 	//std::vector<int> 
 	calculateHistogram((unsigned char *) input_image.data, height, width, histogram);
 
-        unsigned int total = 0;
-        for (int i = 0; i < 256; i++) {
-	    total += histogram[i];
-	    std::cout << histogram[i] << std::endl;
-        }
-	std::cout << "Total:" << total << std::endl;
-	std::cout << "Pixels: " << height * width << std::endl;
-
-
         finish_gpu = CLOCK();
-        
-        cout << "GPU execution time: " << finish_gpu - start_gpu << " ms" << endl;
-               
-//        cout << "writing output image " << argv[2] << endl;
-//        imwrite (argv[2], transpose);
+        std::cout << "GPU execution time: " << finish_gpu - start_gpu << " ms" << std::endl;
+
+        for (int i = minimumHisto; i < maximumHisto; i++) {
+            std::cout << "Value: " << i << ":\t";
+	    for (int stars = 0; stars < histogram[i] / 5000; stars++) {
+	        std::cout << "*";
+            }
+            std::cout << std::endl;
+        }
 
         return 0;
 }
