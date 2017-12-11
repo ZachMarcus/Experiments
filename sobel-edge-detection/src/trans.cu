@@ -53,7 +53,7 @@ __global__ void kernel(unsigned char *input,
        // http://homepages.inf.ed.ac.uk/rbf/HIPR2/sobel.htm
        // https://stackoverflow.com/questions/14358916/applying-sobel-edge-detection-with-cuda-and-opencv-on-a-grayscale-jpg-image 
     if (x < width && y < height ){
-/*        int gX[3][3] = {{-1,0,1},{-2,0,2},{-1,0,1}};
+        int gX[3][3] = {{-1,0,1},{-2,0,2},{-1,0,1}};
         int gY[3][3] = {{-1,-2,-1},{0,0,0},{1,2,1}};
 
         double x_sum = 0.0;
@@ -61,56 +61,19 @@ __global__ void kernel(unsigned char *input,
         int index;
         for (int j = -1; j < 2; j++) {
             for (int i = -1; i < 2; i++) {
-                index = width * (j + x) + i + y;
-                x_sum += input[index] * gX[j][i];
-                y_sum += input[index] * gY[j][i];
+                index = width * (j + y) + i + x;
+                x_sum += input[index] * gX[j+1][i+1];
+                y_sum += input[index] * gY[j+1][i+1];
             }
         }
 
         double answer = sqrt(x_sum * x_sum + y_sum * y_sum);
-        // keep exceeding values, so correct that
-        if (answer < 0) {answer = 0;}
-        if (answer > 255) {answer = 255;}
-
+        // keep exceeding values, so correct that, and apply filter
+        if (answer < 128) {answer = 0;} else {
+            answer = 255;
+        }
+      
         output[x*height+y] = answer;
-*/
-        // +(P1 + 2*P2 + P3)
-        // -(P7 + 2*P8 + P9)
-        // +(P3 + 2*P6 + P9)
-        // -(P1 + 2*P4 + P7)
-
-        // Simplified: P1, P5, P9 cancel out
-        // 2P2 + 2P3 -2P4 +2P6 -2P7 -2P8
-
-/*        double transformedValue = 0;
-        transformedValue += 2 * input[x * width + (y+1)];
-        transformedValue += 2 * input[(x+1) * width + (y+1)];
-        transformedValue -= 2 * input[(x-1) * width + y];
-        transformedValue += 2 * input[(x+1) * width + y];
-        transformedValue -= 2 * input[(x-1) * width + (y-1)];
-        transformedValue -= 2 * input[x * width + (y-1)];
-        if (transformedValue < 0) {transformedValue = 0;}
-        if (transformedValue > 255) {transformedValue = 255;}
-*/
-        double transformedValue = 0;
-        transformedValue += 2 * input[(x+1) * width + (y)];
-        transformedValue += 2 * input[(x+1) * width + (y+1)];
-        transformedValue -= 2 * input[(x) * width + (y-1)];
-        transformedValue += 2 * input[(x) * width + (y+1)];
-        transformedValue -= 2 * input[(x-1) * width + (y-1)];
-        transformedValue -= 2 * input[(x-1) * width + (y)];
-        if (transformedValue < 0) {transformedValue = 0;}
-        if (transformedValue > 255) {transformedValue = 255;}
-
-
-        //transformedValue = -1 * input[(x-1) * height + (y-1)]; // upper left
-        //transformedValue += input[(x+1) * height + (y-1)]; // upper right
-        //transformedValue -= 2 * input[(x-1) * height + y]; // middle left
-        //transformedValue += 2 * input[(x+1) * height + y]; // middle right
-        //transformedValue -= input[(x-1) * height + (y+1)]; // bottom left
-        //transformedValue += input[(x+1) * height + (y+1)]; // bottom right
-
-        output[x*height+y] = transformedValue;
     }
 }
 
